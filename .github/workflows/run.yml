@@ -1,0 +1,29 @@
+name: Build and Deploy
+
+on: [push]
+permissions:
+  contents: write
+jobs:
+  build-and-deploy:
+    concurrency: ci-${{ github.ref }} # Recommended if you intend to make multiple deployments in quick succession.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+
+      - name: Build and run
+      - uses: actions/setup-go@v3
+        with:
+          go-version: ">=1.17.0"
+      - run: |
+          go build -o main .
+          ./main -in users.txt -out users.json
+          mkdir build
+          cp users.json build/
+          cp index.html build/
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4.3.3
+        with:
+          branch: gh-pages # The branch the action should deploy to.
+          folder: build # The folder the action should deploy.
