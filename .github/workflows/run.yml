@@ -32,6 +32,8 @@ jobs:
           mkdir build
           cp users.json build/
           cp index.html build/
+          cp index2.html build/
+          sed -i "s|1655395200|1635395200|g" build/index2.html
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4.3.3
