@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      table,
+      table tr th,
+      table tr td {
+        border: 2px solid #0094ff;
+        border-collapse: collapse;
+        text-align: center;
+        white-space: nowrap;
+      }
+      .up {
+        background-color: lightgreen;
+      }
+      .down {
+        background-color: lightpink;
+      }
+      .target {
+        background-color: green;
+      }
+      td {
+        min-width: 60px;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module">
+      import React, { useEffect, useState } from "https://unpkg.com/es-react@latest/dev/react.js";
+      import ReactDOM from "https://unpkg.com/es-react@latest/dev/react-dom.js";
+      import PropTypes from "https://unpkg.com/es-react@latest/dev/prop-types.js";
+      import htm from "https://unpkg.com/htm@latest?module";
+      const html = htm.bind(React.createElement);
+      const TIME_START = 1635395200;
+      // const TIME_START = 1635395200;
+
+      const firstScore = (histo) => {
+        if (histo == null) return 0;
+        const after = histo.filter((el) => el.contest.startTime >= TIME_START && el.attended);
+        const before = histo.filter((el) => el.contest.startTime < TIME_START && el.attended);
+        if (before.length > 0) return before[0].rating;
+        if (after.length > 0) return after[after.length - 1].rating;
+        return 0;
+      };
+
+      const parseTitle = (title) => {
+        let num = title
+          .split("")
+          .filter((e) => e >= "0" && e <= "9")
+          .join("");
+        if (title.indexOf("双") >= 0) num = num + "b";
+        return num;
+      };
+
+      const THeader = ({ user }) => {
+        return html`<tr>
+          <td>nick</td>
+          <td>当前分</td>
+          <td>初始分</td>
+          <td>目标分</td>
+          ${user.userContestRankingHistory
+            .filter((v) => v.contest.startTime > TIME_START)
+            .map((el) => {
+              return html`<td key=${el.contest.startTime}>${parseTitle(el.contest.title)}</td>`;
+            })}
+        </tr>`;
+      };
+
+      const Box = ({ el, target }) => {
+        let className = "";
+        if (el.attended) {
+          if (el.rating >= target) className = "target";
+          else if (el.trendingDirection == "UP") className = "up";
+          else if (el.trendingDirection == "DOWN") className = "down";
+        }
+        return html`<td className=${className}>${el.attended ? `${el.rating.toFixed(2)}|${el.ranking}` : ""}</td>`;
+      };
+
+      const TCol = ({ user, sample }) => {
+        const rating = user.userContestRanking.rating;
+        const initRating = firstScore(user.userContestRankingHistory);
+        const targetRating = initRating > 0 ? Math.max(1888, initRating + 200) : 0;
+        return html`<tr>
+          <td>${user.username}</td>
+          <td>${rating > 0 ? rating.toFixed(2) : "???"}</td>
+          <td>${initRating > 0 ? initRating.toFixed(2) : "???"}</td>
+          <td>${targetRating > 0 ? targetRating.toFixed(2) : "???"}</td>
+          ${user.userContestRankingHistory
+            ? user.userContestRankingHistory
+                .filter((v) => v.contest.startTime > TIME_START)
+                .map((el) => {
+                  return html`<${Box} el=${el} target=${targetRating} key=${el.contest.startTime} />`;
+                })
+            : sample.userContestRankingHistory.filter((v) => v.contest.startTime > TIME_START).map((el) => html`<td></td>`)}
+        </tr>`;
+      };
+
+      const Table = ({ users }) => {
+        console.log(users);
+        let sample = structuredClone(users.find((el) => el.userContestRanking.rating > 0));
+        return html`<table>
+          <thead>
+            <${THeader} user=${sample} />
+          </thead>
+          <tbody>
+            ${users.map((user) => html`<${TCol} user=${user} sample=${sample} />`)}
+          </tbody>
+        </table>`;
+      };
+
+      const App = (props) => {
+        const [users, setUsers] = useState(null);
+        useEffect(() => {
+          const fetchData = async () => {
+            const response = await fetch("./users.json");
+            const data = await response.json();
+            data.users.forEach((u) => u.userContestRankingHistory && u.userContestRankingHistory.reverse());
+            setUsers(data.users);
+          };
+          fetchData();
+        }, []);
+        return html`<div>${users ? html`<${Table} users=${users} />` : "Loading"}</Table>`;
+      };
+
+      ReactDOM.render(html`<${App} foo=${"bar"} />`, document.getElementById("root"));
+    </script>
+    <div id="root"></div>
+  </body>
+</html>
