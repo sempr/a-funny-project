@@ -32,7 +32,7 @@ jobs:
           mkdir build
           cp users.json build/
           cp index.html build/
-          cp index2.html build/
+          cp index.html build/index2.html
           sed -i "s|1655395200|1635395200|g" build/index2.html
 
       - name: Deploy 🚀
