@@ -30,11 +30,14 @@
   </head>
   <body>
     <script type="module">
-      import React, { useEffect, useState } from "https://unpkg.com/es-react@latest/dev/react.js";
-      import ReactDOM from "https://unpkg.com/es-react@latest/dev/react-dom.js";
-      import PropTypes from "https://unpkg.com/es-react@latest/dev/prop-types.js";
-      import htm from "https://unpkg.com/htm@latest?module";
-      const html = htm.bind(React.createElement);
+      import { render } from "https://esm.sh/preact@10.7.2";
+      import { useState, useEffect } from "https://esm.sh/preact@10.7.2/hooks";
+      import { html } from "https://esm.sh/htm@3.0.4/preact";
+      // import React, { useEffect, useState } from "https://unpkg.com/es-react@latest/dev/react.js";
+      // import ReactDOM from "https://unpkg.com/es-react@latest/dev/react-dom.js";
+      // import PropTypes from "https://unpkg.com/es-react@latest/dev/prop-types.js";
+      // import htm from "https://unpkg.com/htm@latest?module";
+      // const html = htm.bind(React.createElement);
       const TIME_START = 1635395200;
       // const TIME_START = 1635395200;
 
@@ -100,7 +103,6 @@
       };
 
       const Table = ({ users }) => {
-        console.log(users);
         let sample = structuredClone(users.find((el) => el.userContestRanking.rating > 0));
         return html`<table>
           <thead>
@@ -126,7 +128,7 @@
         return html`<div>${users ? html`<${Table} users=${users} />` : "Loading"}</Table>`;
       };
 
-      ReactDOM.render(html`<${App} foo=${"bar"} />`, document.getElementById("root"));
+      render(html`<${App} foo=${"bar"} />`, document.getElementById("root"));
     </script>
     <div id="root"></div>
   </body>
