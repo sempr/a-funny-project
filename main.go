@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/imroc/req/v3"
+	"github.com/go-resty/resty/v2"
 )
 
 const query = `query userContestRankingInfo($userSlug: String!) {
@@ -90,6 +90,8 @@ type Output struct {
 	Code  int       `json:"code"`
 }
 
+const LC_URL = "https://leetcode.cn/graphql/noj-go/"
+
 func main() {
 	var fname, ofile string
 	flag.StringVar(&fname, "in", "users.txt", "User File")
@@ -134,7 +136,7 @@ func AskUser(name string) OneUser {
 	q.Variables.UserSlug = name
 
 	var result Response
-	req.SetBody(q).SetResult(&result).Post("https://leetcode.cn/graphql/noj-go/")
+	resty.New().R().SetBody(q).SetResult(&result).Post(LC_URL)
 	var oneUser OneUser
 	oneUser.UserContestRanking = result.Data.UserContestRanking
 	oneUser.UserContestRankingHistory = result.Data.UserContestRankingHistory
