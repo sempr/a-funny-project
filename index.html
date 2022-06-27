@@ -62,6 +62,7 @@
       const THeader = ({ user }) => {
         return html`<tr>
           <td>nick</td>
+          <td>所需分数</td>
           <td>当前分</td>
           <td>初始分</td>
           <td>目标分</td>
@@ -89,6 +90,7 @@
         const targetRating = initRating > 0 ? Math.max(1888, initRating + 200) : 0;
         return html`<tr>
           <td>${user.username}</td>
+          <td>${rating > 0 ? (targetRating - rating).toFixed(2) : "???"}</td>
           <td>${rating > 0 ? rating.toFixed(2) : "???"}</td>
           <td>${initRating > 0 ? initRating.toFixed(2) : "???"}</td>
           <td>${targetRating > 0 ? targetRating.toFixed(2) : "???"}</td>
