@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/go-resty/resty/v2"
 )
@@ -114,8 +115,8 @@ func main() {
 	output.Code = 0
 
 	for _, user := range users {
-		fmt.Printf("<%s>\n", user)
 		r := AskUser(user)
+		fmt.Printf("<%s> %.2f\n", user, r.UserContestRanking.Rating)
 		output.Users = append(output.Users, r)
 	}
 	f2, err := os.Create(ofile)
@@ -136,7 +137,9 @@ func AskUser(name string) OneUser {
 	q.Variables.UserSlug = name
 
 	var result Response
-	resty.New().R().SetBody(q).SetResult(&result).Post(LC_URL)
+	resty.New().
+		SetRetryCount(5).SetRetryMaxWaitTime(time.Second * 2).SetTimeout(time.Second * 20).
+		R().SetBody(q).SetResult(&result).Post(LC_URL)
 	var oneUser OneUser
 	oneUser.UserContestRanking = result.Data.UserContestRanking
 	oneUser.UserContestRankingHistory = result.Data.UserContestRankingHistory
