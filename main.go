@@ -138,7 +138,7 @@ func AskUser(name string) OneUser {
 
 	var result Response
 	resty.New().
-		SetRetryCount(5).SetRetryMaxWaitTime(time.Second * 2).SetTimeout(time.Second * 20).
+		SetRetryCount(10).SetRetryMaxWaitTime(time.Second * 3).SetTimeout(time.Second * 20).
 		R().SetBody(q).SetResult(&result).Post(LC_URL)
 	var oneUser OneUser
 	oneUser.UserContestRanking = result.Data.UserContestRanking
