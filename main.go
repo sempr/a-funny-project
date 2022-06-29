@@ -90,7 +90,7 @@ type Output struct {
 	Code  int       `json:"code"`
 }
 
-const LC_URL = "https://leetcode.cn/graphql/noj-go/"
+const LC_URL = "https://leetcode.com/graphql/noj-go/"
 
 func main() {
 	var fname, ofile string
