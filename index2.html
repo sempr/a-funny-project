@@ -6,6 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>快乐刷题群排名</title>
     <style>
+      a,
+      a:visited {
+        text-decoration: none;
+        color: black;
+      }
+      a:hover {
+        text-decoration: underline;
+        color: blue;
+      }
       table,
       table tr th,
       table tr td {
@@ -82,12 +91,15 @@
 
       const Box = ({ el, target }) => {
         let className = "";
+        let title = "";
         if (el.attended) {
           if (el.rating >= target) className = "target";
           else if (el.trendingDirection == "UP") className = "up";
           else if (el.trendingDirection == "DOWN") className = "down";
+          let seconds = el.finishTimeInSeconds - el.contest.startTime;
+          title = "用时: " + new Date(seconds * 1000).toISOString().substr(11, 8) + " 分数: " + el.score + " 排名: " + el.ranking;
         }
-        return html`<td className=${className}>${el.attended ? `${el.rating.toFixed(2)}|${el.ranking}` : ""}</td>`;
+        return html`<td className=${className} title=${title}>${el.attended ? `${el.rating.toFixed(2)}|${el.ranking}` : ""}</td>`;
       };
 
       const TCol = ({ user, sample }) => {
@@ -99,7 +111,7 @@
         const needRating = rating > 0 ? (maxRating >= targetRating ? "done" : (targetRating - rating).toFixed(2)) : "???";
 
         return html`<tr>
-          <td>${user.username}</td>
+          <td><a href="https://leetcode.cn/u/${user.username}/" target="_blank">${user.username}</a></td>
           <td>${needRating}</td>
           <td>${rating > 0 ? rating.toFixed(2) : "???"}</td>
           <td>${initRating > 0 ? initRating.toFixed(2) : "???"}</td>
