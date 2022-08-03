@@ -50,10 +50,16 @@
       const TIME_START = 0;
       // const TIME_START = 1635395200;
 
-      const firstScore = (histo) => {
+      const firstScore = (histo, jt) => {
+        // 如果jt==TIME_START, 选择jt前的最后一条，如果jt前没有则选择jt后第一条
+        // 如果jt >TIME_START, 选择jt和TIME_START中的最大值，如果没有，选择TIME_START前的第一条，再没有，选择后面的第一条
         if (histo == null) return 0;
-        const after = histo.filter((el) => el.contest.startTime >= TIME_START && el.attended);
-        const before = histo.filter((el) => el.contest.startTime < TIME_START && el.attended);
+        const after = histo.filter((el) => el.contest.startTime >= jt && el.attended);
+        const mids = histo.filter((el) => el.contest.startTime < jt && el.contest.startTime >= TIME_START && el.attended);
+        const before = histo.filter((el) => el.contest.startTime < jt && el.attended);
+        if (mids.length > 0) {
+          return Math.max(...mids.map((el) => el.rating));
+        }
         if (before.length > 0) return before[0].rating;
         if (after.length > 0) return after[after.length - 1].rating;
         return 0;
@@ -76,6 +82,7 @@
 
       const THeader = ({ user }) => {
         return html`<tr>
+          <td>加入时间</td>
           <td>nick</td>
           <td>所需分数</td>
           <td>当前分</td>
@@ -84,7 +91,9 @@
           ${user.userContestRankingHistory
             .filter((v) => v.contest.startTime > TIME_START)
             .map((el) => {
-              return html`<td key=${el.contest.startTime}>${parseTitle(el.contest.title)}</td>`;
+              return html`<td key=${el.contest.startTime}>
+                ${parseTitle(el.contest.title)} | ${new Date(el.contest.startTime * 1000).toLocaleString("zh-CN")}
+              </td>`;
             })}
         </tr>`;
       };
@@ -102,15 +111,16 @@
         return html`<td className=${className} title=${title}>${el.attended ? `${el.rating.toFixed(2)}|${el.ranking}` : ""}</td>`;
       };
 
-      const TCol = ({ user, sample }) => {
+      const TCol = ({ user, sample, jt }) => {
         const rating = user.userContestRanking.rating;
-        const initRating = firstScore(user.userContestRankingHistory);
+        const initRating = firstScore(user.userContestRankingHistory, jt);
         const maxRating = maxScore(user.userContestRankingHistory);
         const targetRating = initRating > 0 ? Math.max(1888, initRating + 200) : 0;
 
         const needRating = rating > 0 ? (maxRating >= targetRating ? "done" : (targetRating - rating).toFixed(2)) : "???";
-
+        const joinT = new Date(jt * 1000).toLocaleDateString("zh-CN");
         return html`<tr>
+          <td>${joinT}</td>
           <td><a href="https://leetcode.cn/u/${user.username}/" target="_blank">${user.username}</a></td>
           <td>${needRating}</td>
           <td>${rating > 0 ? rating.toFixed(2) : "???"}</td>
@@ -126,20 +136,26 @@
         </tr>`;
       };
 
-      const Table = ({ users }) => {
+      const getJT = (joinT, user) => {
+        if (joinT[user.username] !== undefined) return joinT[user.username];
+        return TIME_START;
+      };
+
+      const Table = ({ users, joinT }) => {
         let sample = structuredClone(users.find((el) => el.userContestRanking.rating > 0));
         return html`<table>
           <thead>
             <${THeader} user=${sample} />
           </thead>
           <tbody>
-            ${users.map((user) => html`<${TCol} user=${user} sample=${sample} />`)}
+            ${users.map((user) => html`<${TCol} user=${user} sample=${sample} jt=${getJT(joinT, user)} />`)}
           </tbody>
         </table>`;
       };
 
       const App = (props) => {
         const [users, setUsers] = useState(null);
+        const [joinT, setjoinT] = useState(null);
         useEffect(() => {
           const fetchData = async () => {
             const response = await fetch("./users.json");
@@ -147,9 +163,20 @@
             data.users.forEach((u) => u.userContestRankingHistory && u.userContestRankingHistory.reverse());
             setUsers(data.users);
           };
+          const fetchJoin = async () => {
+            const response = await fetch("./joins.json");
+            const data = await response.json();
+            let dt = {};
+            Object.keys(data).forEach((key) => {
+              let t = new Date(data[key]).getTime() / 1000;
+              dt[key] = t;
+            });
+            setjoinT(dt);
+          };
           fetchData();
+          fetchJoin();
         }, []);
-        return html`<div>${users ? html`<${Table} users=${users} />` : "Loading"}</Table>`;
+        return html`<div>${users && joinT ? html`<${Table} users=${users} joinT=${joinT} />` : "Loading"}</Table>`;
       };
 
       render(html`<${App} foo=${"bar"} />`, document.getElementById("root"));
