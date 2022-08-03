@@ -31,6 +31,7 @@ jobs:
           ./main -in users.txt -out users.json
           mkdir build
           cp users.json build/
+          cp joins.json build/
           cp index.html build/
           cp index.html build/index2.html
           sed -i "s|1655395200|0|g" build/index2.html
