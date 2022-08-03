@@ -6,12 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>快乐刷题群排名</title>
     <style>
-      a,
-      a:visited {
+      td a,
+      td a:visited {
         text-decoration: none;
         color: black;
       }
-      a:hover {
+      td a:hover {
         text-decoration: underline;
         color: blue;
       }
@@ -182,5 +182,19 @@
       render(html`<${App} foo=${"bar"} />`, document.getElementById("root"));
     </script>
     <div id="root"></div>
+    <div>
+      <p>About:</p>
+      <ol>
+        <li>
+          初始分计算规则: 从前往后先有值者为准
+          <ol>
+            <li>6.27~加入时间期间的最高分</li>
+            <li>6.27前最近一次的分数</li>
+            <li>加入后的第一场分数</li>
+          </ol>
+        </li>
+        <li>分数预测网站: <a href="http://lcpredictor.herokuapp.com/" target="_blank">点我</a></li>
+      </ol>
+    </div>
   </body>
 </html>
